@@ -15,12 +15,10 @@ public with sharing class OpportunityTriggerHandler extends TriggerHandler {
 
         // Create new opp name -- Account Name + Position title (eg, Google Salesforce Developer)
         // Grab each AccountId from opps in Trigger.new (newOppList) - use for Map below
-        Set<Id> acctIdSet = new Map<Id,AggregateResult>([SELECT Id, AccountId FROM Opportunity WHERE Id IN :newOppList GROUP BY AccountId]).keySet();
-        System.debug(acctIdSet);
-        // Set<Id> acctIdSet = new Set<Id>(); 
-        // for(Opportunity opp : newOppList){
-        //     acctIdSet.add(opp.AccountId);
-        // }
+        Set<Id> acctIdSet = new Set<Id>(); 
+        for(Opportunity opp : newOppList){
+            acctIdSet.add(opp.AccountId);
+        }
         Map<Id,Account> acctMap = new Map<Id,Account>([SELECT Id, Name FROM Account WHERE Id IN :acctIdSet]);
         for(Opportunity opp : newOppList){
             opp.Name = acctMap.get(opp.AccountId).Name + ' ' + opp.Position_Title__c;
