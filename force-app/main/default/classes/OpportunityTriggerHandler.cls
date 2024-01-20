@@ -12,18 +12,7 @@ public with sharing class OpportunityTriggerHandler extends TriggerHandler {
     }
 
     public override void beforeInsert(){
-
-        // Create new opp name -- Account Name + Position title (eg, Google Salesforce Developer)
-        // Grab each AccountId from opps in Trigger.new (newOppList) - use for Map below
-        Set<Id> acctIdSet = new Set<Id>(); 
-        for(Opportunity opp : newOppList){
-            acctIdSet.add(opp.AccountId);
-        }
-        Map<Id,Account> acctMap = new Map<Id,Account>([SELECT Id, Name FROM Account WHERE Id IN :acctIdSet]);
-        for(Opportunity opp : newOppList){
-            opp.Name = acctMap.get(opp.AccountId).Name + ' ' + opp.Position_Title__c;
-            System.debug(opp.Name);
-        }
+        updateOppName();
     }
 
     public override void afterInsert(){
@@ -72,4 +61,25 @@ public with sharing class OpportunityTriggerHandler extends TriggerHandler {
         insert tasksToInsert;
     }
 
+    private void updateOppName(){
+        // Create account map only for acounts related to new/updated opps -- this will be used to update opp names
+        Map<Id,Account> acctMap = new Map<Id,Account>([SELECT Id, Name FROM Account WHERE Id IN :getAcctIdsFromOpps()]);
+        createDefaultOppName(acctMap);
+    }
+
+    private Set<Id> getAcctIdsFromOpps(){
+        // Grab each AccountId from opps in Trigger.new (newOppList)
+        Set<Id> acctIdSet = new Set<Id>(); 
+        for(Opportunity opp : this.newOppList){
+            acctIdSet.add(opp.AccountId);
+        }
+        return acctIdSet;
+    }
+
+    private void createDefaultOppName(Map<id,Account> acctMap){
+        String createDate = Date.today().format();
+        for(Opportunity opp : this.newOppList){
+            opp.Name = acctMap.get(opp.AccountId).Name + ' ' + opp.Position_Title__c + ' ' + createDate;
+        }
+    }
 }

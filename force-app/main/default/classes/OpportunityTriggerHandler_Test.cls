@@ -43,7 +43,7 @@ private class OpportunityTriggerHandler_Test {
         // Query Opps to check names
         List<Opportunity> opps = [SELECT Id, Name, Account.Name, Position_Title__c FROM Opportunity];
         for(Opportunity opp : opps){
-            oppName = opp.Account.Name + ' ' + opp.Position_Title__c;
+            oppName = opp.Account.Name + ' ' + opp.Position_Title__c + ' ' + Date.today().format();
             Assert.areEqual(oppName, opp.Name);
         }
     }
